@@ -105,7 +105,7 @@
                   
                         var graftDescription = "<b>Street address</b>: " + data[i].address + "<br>" + "<b>City</b>: " + data[i].city + "<br>" + "<b>District</b>: " + data[i].district + "<br>" + "<b>District Name</b>: " + data[i].district_name + "<br>" + "<b> Distance: "; 
                         var length = data[i].longitude - lat;
-                        graftDescription += length;
+                        graftDescription += length * length;
                         var infowindow = new google.maps.InfoWindow({content: graftDescription});
                         marker.addListener('click', function() {infowindow.open(map, marker);
                         });
