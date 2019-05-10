@@ -1,0 +1,185 @@
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width">
+	<title>Graffiti Locator</title>
+	<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T"
+	 crossorigin="anonymous">
+
+
+	<style>
+		.content {
+			display: none;
+			margin: 1em;
+		}
+        .template {
+			display: none;
+		}
+        #mapView{
+            height: 400px;
+            width: 100%;
+        }
+       
+	</style>
+
+</head>
+
+<body>
+	<nav class="navbar navbar-expand-lg navbar-light bg-light">
+		<a class="navbar-brand" href="#">Navbar</a>
+		<button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+    <span class="navbar-toggler-icon"></span>
+    </button>
+  <div class="collapse navbar-collapse" id="navbarNav">
+    <ul class="navbar-nav">
+      <li class="nav-item">
+        <a class="nav-link" href="#home">Search<span class="sr-only">(current)</span></a>
+      </li>
+     
+      <li class="nav-item">
+        <a class="nav-link" href="#map">Map</a>
+      </li>
+     
+    </ul>
+  </div>
+  </nav>
+  <div class="content" id="home">
+    <h1>Search Page</h1>
+    <br>
+    <br>
+    
+    
+    <br>
+     <label>Ward</label>
+    <input type="text" id="searchItem" placeholder="Enter Ward"><br>
+    <label>Status</label>
+    <select id="selectOption">
+        <option value="Open">Open</option>
+        <option value="Completed">Completed</option>
+    </select><br>
+    <button id="searchData">Search</button>
+      
+  </div>
+  
+  <div class="content" id="map">
+    <h2><b>Map View</b></h2>
+    <div id="mapView"></div>
+  </div>
+ 
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/4.3.1/js/bootstrap.min.js"></script>
+      
+    <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+   
+    <script src ="https://maps.googleapis.com/maps/api/js?key=AIzaSyDAPIF_1S6CDaBMMlAhaAJisScZdUmSFQo">
+    </script>
+    <script>
+     
+      $(document).ready(function() {
+        var dataBaseApi = "https://data.cityofchicago.org/resource/cdmx-wzbz.json";
+        $("#home").show();
+        function hide() {
+          $(".content").hide();
+        }
+        
+        $(".nav-link").on("click", function(){
+          hide();
+          var target = $(this).attr("href");
+          $(target).show();
+          
+        });
+        function displayMap(data){
+            if(data.length == 0){
+                $("#mapView").append("<h1>No records available.<br></h1>");
+            }
+            else{
+                var location = {lat: parseFloat(data[0].latitude), lng: parseFloat(data[0].longitude)};
+                var createMap = new google.maps.Map(document.getElementById('mapView'), {zoom: 12, center: location});
+                var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+                    $.each(data, function(i,v){
+                        
+                        var local = {lat: parseFloat(data[i].latitude), lng: parseFloat(data[i].longitude)};
+                        var marker;
+                        if(data[i].status == "Completed"){
+                            marker = new google.maps.Marker({position: local, map: createMap, icon: iconBase + 'parking_lot_maps.png'});
+                        }
+                        else{
+                            marker = new google.maps.Marker({position: local, map: createMap, icon: iconBase + 'info-i_maps.png'});
+                        }
+                        var graftDescription = "<b>Street address</b>: " + data[i].street_address + "<br>" + "<b>Service Request Number</b>: " + data[i].service_request_number + "<br>" + "<b>Type of Surface</b>: " + data[i].what_type_of_surface_is_the_graffiti_on_ + "<br>" + "<b>Graffiti Location</b>: " + data[i].where_is_the_graffiti_located_ + "<br>" + "<b>Status</b>: " +  data[i].status + "<br>" + "<b>Creation Date</b>: " + data[i].creation_date; 
+                        if(data[i].status == "Completed"){
+                           graftDescription += "<br><b>Completion Date</b>: " + data[i].completion_date;
+                        }
+                        var infowindow = new google.maps.InfoWindow({content: graftDescription});
+                        marker.addListener('click', function() {infowindow.open(map, marker);
+                        });
+                    });
+               
+                    
+                
+            }
+        }
+        $("#searchData").on("click", function() {
+          
+          var option = $("#searchItem").val();
+          
+          var temp;
+          var apiEnd = dataBaseApi;
+          $("#cards").empty();
+          
+            
+          apiEnd = apiEnd + "?ward=" + option + "&" + "status=";
+          if($("#selectOption").val().toUpperCase() == "COMPLETED"){
+                  temp = "Completed";
+           }
+           else if($("#selectOption").val().toUpperCase() == "OPEN"){
+                  temp = "Open";
+           }
+         
+         apiEnd += temp;
+         console.log(apiEnd);
+         $.get(apiEnd, function(fileData){
+             $("#cards").append("<h1>Query returned " + fileData.length + " records</h1>");
+             var data = fileData;
+             displayMap(fileData);
+             $.each(data, function(i,v){
+                var cloneCard = $(".template").clone();
+                cloneCard.find(".address").text("Street address: " + v.street_address);
+                cloneCard.find(".serviceRequest").text("Service Request Number: " + v.service_request_number);
+                cloneCard.find(".surface").text("Type of Surface: " + v.what_type_of_surface_is_the_graffiti_on_);
+                cloneCard.find(".location").text("Graffiti Location: " + v.where_is_the_graffiti_located_);
+                cloneCard.find(".date").text("Creation Date: " + v.creation_date);
+                cloneCard.find(".graftStatus").text("Status: " +v.status);
+                if(v.completion_date){
+                    cloneCard.find(".dateCompleted").text("Completion Date: " +v.completion_date);
+                }
+                else{
+                    cloneCard.find(".dateCompleted").text("");
+                }
+                cloneCard.removeClass("template");
+                $("#cards").append(cloneCard);
+             });
+             
+         });
+         
+         hide();
+         $("#list").show();
+        
+          
+         
+        });
+        
+      });
+    </script>
+
+   
+  </body>
+</html>
+
+
+
+<!--https://data.cityofchicago.org/resource/9rg7-mz9y.json-->
