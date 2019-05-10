@@ -54,11 +54,11 @@
     
     
     <br>
-     <label>District</label>
-    <input type="number" id="searchItem" placeholder="Enter Ward"><br>
+     <label>Display Map </label>
+    
     
    
-    <button id="searchData">Search</button>
+    <button id="searchData">Display</button>
     <h2><b>Map View</b></h2>
     <div id="mapView"></div>
   </div>
@@ -76,6 +76,8 @@
       $(document).ready(function() {
         var dataBaseApi = "https://data.cityofchicago.org/resource/9rg7-mz9y.json";
         $("#map").show();
+        var lat;
+        var alt;
         function hide() {
           $(".content").hide();
         }
@@ -86,7 +88,11 @@
           $(target).show();
           
         });
-        function displayMap(data){
+        function displayMap(data, alt, lat){
+            var location = {lat: parseFloat(lat), lng: parseFloat(alt)};
+            var createMap = new google.maps.Map(document.getElementById('mapView'), {zoom: 11, center: location});
+            var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+            
             if(data.length == 0){
                 $("#mapView").append("<h1>No records available.<br></h1>");
             }
@@ -110,24 +116,35 @@
                 
             }
         }
+          var x = document.getElementById("demo");
+
+        function getLocation() {
+          if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(showPosition);
+          } else { 
+                x.innerHTML = "Geolocation is not supported by this browser.";
+          }
+        }
+
+        function showPosition(position) {
+         
+          lat = position.coords.latitude;
+          alt = position.coords.longitude;
+        }
         $("#searchData").on("click", function() {
           
-          var option = $("#searchItem").val();
           
-          var temp;
           var apiEnd = dataBaseApi;
-          $("#cards").empty();
+         
           
-          console.log(option);
-          apiEnd = apiEnd + "?district=" + option;
-          
+         getLocation();
          
          
          console.log(apiEnd);
          $.get(apiEnd, function(fileData){
              
              
-             displayMap(fileData);
+             displayMap(fileData, alt, lat);
             
              
          });
