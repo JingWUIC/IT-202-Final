@@ -97,16 +97,15 @@
                 $("#mapView").append("<h1>No records available.<br></h1>");
             }
             else{
-                var location = {lat: parseFloat(data[0].latitude), lng: parseFloat(data[0].longitude)};
-                var createMap = new google.maps.Map(document.getElementById('mapView'), {zoom: 14, center: location});
-                var iconBase = 'https://maps.google.com/mapfiles/kml/shapes/';
+                
                     $.each(data, function(i,v){
                         
                         var local = {lat: parseFloat(data[i].latitude), lng: parseFloat(data[i].longitude)};
                         var marker = new google.maps.Marker({position: local, map: createMap, icon: iconBase + 'parking_lot_maps.png'});
                   
-                        var graftDescription = "<b>Street address</b>: " + data[i].address + "<br>" + "<b>City</b>: " + data[i].city + "<br>" + "<b>District</b>: " + data[i].district + "<br>" + "<b>District Name</b>: " + data[i].district_name + "<br>"; 
-                       
+                        var graftDescription = "<b>Street address</b>: " + data[i].address + "<br>" + "<b>City</b>: " + data[i].city + "<br>" + "<b>District</b>: " + data[i].district + "<br>" + "<b>District Name</b>: " + data[i].district_name + "<br>" + "<b> Distance: "; 
+                        var length = data[i].longitude - lat;
+                        graftDescription += length;
                         var infowindow = new google.maps.InfoWindow({content: graftDescription});
                         marker.addListener('click', function() {infowindow.open(map, marker);
                         });
